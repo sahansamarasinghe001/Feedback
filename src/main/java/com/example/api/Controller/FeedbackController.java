@@ -27,38 +27,47 @@ public class FeedbackController {
     }
 
 
+    //Save feedback data
     @PostMapping("save")
     public ResponseEntity<Feedback> saveFeedBack(@RequestBody Feedback feedback){
       return new ResponseEntity<Feedback>(feedbackservice.saveFeedback(feedback), HttpStatus.CREATED);
 
     }
 
+    //Get all data from the database
     @GetMapping("getall")
     public List<Feedback> getAllFeedbackData(){
         return feedbackservice.getAllFeedback();
     }
 
+    //Retrieving data by feedback id
     @GetMapping("data/{id}")
    public ResponseEntity<Feedback> getFeedbackById(@PathVariable("id") long id){
      return new ResponseEntity<Feedback>(feedbackservice.getFeedbackById(id), HttpStatus.OK);
    }
+
+   //Retrieving data by user id
     @GetMapping("user/{id}")
     public List<Feedback> getFeedbackByUserId(@PathVariable("id") String id){
         return feedbackservice.getUserId(id);
     }
 
+    //Get feedback data by type
     @GetMapping("type/{type}")
     public List<Feedback> getByFeedbackDataType(@PathVariable("type") String type){
         return feedbackservice.getByFeedbackType(type);
     }
 
-    @GetMapping("date/{date1}/{date2}")
-    public List<Feedback> getBetweenDates(@PathVariable("date1") String Date1,
-                                          @PathVariable("date2") String Date2){
-        return feedbackservice.getBetweenDates(Date1,Date2);
+    //Retrieve data between 2 dates
+    @GetMapping("date")
+    public List<Feedback> getBetweenDates(@RequestParam("from") String Date1,
+                                          @RequestParam("to") String Date2){
+
+            return feedbackservice.getBetweenDates(Date1,Date2);
 
     }
 
+    //Update data by feedback id
     @PutMapping("update/{id}")
     public ResponseEntity<Feedback> UpdateFeedback(@PathVariable("id") long id,
                                                    @RequestBody Feedback feedback){
@@ -66,6 +75,7 @@ public class FeedbackController {
         return new ResponseEntity<Feedback>(feedbackservice.updateFeedback(feedback,id),HttpStatus.OK);
     }
 
+    //Delete data by feedback id
     @DeleteMapping("delete/{id}")
     public ResponseEntity<String> deleteFeedback(@PathVariable("id") long id){
 
@@ -73,6 +83,7 @@ public class FeedbackController {
         return new ResponseEntity<String>("Data Deleted",HttpStatus.OK);
     }
 
+    //Retrieve data as CSV
     @GetMapping("getcsv")
     public void exportToCSV(HttpServletResponse response) throws IOException {
 
