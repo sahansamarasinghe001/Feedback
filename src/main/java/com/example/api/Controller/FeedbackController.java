@@ -3,35 +3,30 @@ package com.example.api.Controller;
 
 import com.example.api.Model.Feedback;
 import com.example.api.Service.FeedBackService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.supercsv.io.CsvBeanWriter;
-import org.supercsv.io.ICsvBeanWriter;
-import org.supercsv.prefs.CsvPreference;
+
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+
 import java.util.List;
 
 @RestController
 @RequestMapping("/api")
 public class FeedbackController {
 
+    @Autowired
     private FeedBackService feedbackservice;
-    public FeedbackController(FeedBackService feedbackservice) {
-        this.feedbackservice = feedbackservice;
-    }
+
 
 
     //Save feedback data
     @PostMapping("save")
     public ResponseEntity<Feedback> saveFeedBack(@RequestBody Feedback feedback){
       return new ResponseEntity<Feedback>(feedbackservice.saveFeedback(feedback), HttpStatus.CREATED);
-
     }
 
     //Get all data from the database
@@ -85,32 +80,9 @@ public class FeedbackController {
 
     //Retrieve data as CSV
     @GetMapping("getcsv")
-    public void exportToCSV(HttpServletResponse response) throws IOException {
-
-        response.setContentType("text/csv");
-        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
-        String currentDateTime = dateFormatter.format(new Date());
-
-        String headerKey = "Content-Disposition";
-        String headerValue = "attachment; filename=Feedbacks_" + currentDateTime + ".csv";
-        response.setHeader(headerKey, headerValue);
-
-        List<Feedback> feedbacks = feedbackservice.getAllFeedback();
-        ICsvBeanWriter csvWriter = new CsvBeanWriter(response.getWriter(), CsvPreference.STANDARD_PREFERENCE);
-
-        String[] csvHeader = {"feedback_id", "content", "date", "subject", "type","user_id"};
-        String[] nameMapping = {"feedbackId", "content", "date", "subject", "type","userId"};
-        csvWriter.writeHeader(csvHeader);
-
-        for (Feedback data : feedbacks) {
-            csvWriter.write(data, nameMapping);
-        }
-        csvWriter.close();
-
-
-
-
-
+    public ResponseEntity<?> exportToCSV(HttpServletResponse response) throws IOException {
+        feedbackservice.downloadFeedbackCsv(response);
+       return ResponseEntity.ok().build();
     }
 
 

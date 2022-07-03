@@ -5,20 +5,25 @@ import com.example.api.Model.Feedback;
 import com.example.api.Repository.FeedbackRepository;
 import com.example.api.Service.FeedBackService;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.supercsv.io.CsvBeanWriter;
+import org.supercsv.io.ICsvBeanWriter;
+import org.supercsv.prefs.CsvPreference;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class FeedBackServiceimpl implements FeedBackService {
 
+    @Autowired
     private FeedbackRepository feedbackrepository;
-    public FeedBackServiceimpl(FeedbackRepository feedbackrepository) {
-        super();
-        this.feedbackrepository = feedbackrepository;
-    }
-
 
     @Override
     public Feedback saveFeedback(Feedback feedback) {
@@ -106,6 +111,30 @@ public class FeedBackServiceimpl implements FeedBackService {
         feedbackrepository.findById(id).orElseThrow(
                 ()-> new ResourceNotFoundException("Feedback","Id", id));
         feedbackrepository.deleteById(id);
+    }
+
+    @Override
+    public void downloadFeedbackCsv(HttpServletResponse response) throws IOException {
+
+        response.setContentType("text/csv");
+        DateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss");
+        String currentDateTime = dateFormatter.format(new Date());
+
+        String headerKey = "Content-Disposition";
+        String headerValue = "attachment; filename=Feedbacks_" + currentDateTime + ".csv";
+        response.setHeader(headerKey, headerValue);
+
+        List<Feedback> feedbacks = getAllFeedback();
+        ICsvBeanWriter csvWriter = new CsvBeanWriter(response.getWriter(), CsvPreference.STANDARD_PREFERENCE);
+
+        String[] csvHeader = {"feedback_id", "content", "date", "subject", "type","user_id"};
+        String[] nameMapping = {"feedbackId", "content", "date", "subject", "type","userId"};
+        csvWriter.writeHeader(csvHeader);
+
+        for (Feedback data : feedbacks) {
+            csvWriter.write(data, nameMapping);
+        }
+        csvWriter.close();
     }
 
 }
